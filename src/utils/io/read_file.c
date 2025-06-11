@@ -38,3 +38,7 @@ FileBuffer read_file_to_buffer(const char* file_name) {
 
     return file_buffer;
 }
+
+void free_file_buffer(FileBuffer file_buffer) {
+    if (file_buffer.data) free(file_buffer.data);
+}

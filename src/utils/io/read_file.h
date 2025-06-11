@@ -9,5 +9,6 @@ typedef struct {
 } FileBuffer;
 
 FileBuffer read_file_to_buffer(const char* file_name);
+void free_file_buffer(FileBuffer file_buffer);
 
 #endif

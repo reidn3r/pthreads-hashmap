@@ -1,11 +1,28 @@
 #!/usr/bin/bash
 set -e
 
+DEBUG=0
+
+# Check for --debug flag
+if [[ "$1" == "--debug" ]]; then
+  DEBUG=1
+  echo "Debug mode enabled"
+fi
+
 echo "Compiling C code..."
-cc -lpthread -Wall -Wextra $(find src -name '*.c') -o a.out
+CFLAGS="-Wall -Wextra"
+if [[ $DEBUG -eq 1 ]]; then
+  CFLAGS="$CFLAGS -g -DDEBUG"
+fi
+
+cc $CFLAGS -lpthread $(find src -name '*.c') -o a.out
 
 echo "Executing C code..."
-./a.out
+if [[ $DEBUG -eq 1 ]]; then
+  gdb ./a.out
+else
+  ./a.out
+fi
 
 rm a.out
 

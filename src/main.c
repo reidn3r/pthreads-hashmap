@@ -3,6 +3,7 @@
 #include "utils/hashmap/hashmap.h"
 #include "utils/hash/fnv_hash.h"
 #include "utils/io/read_file.h"
+#include "utils/threads/threads.h"
 
 int main() {
   /*
@@ -23,26 +24,29 @@ int main() {
     "música", "escola", "trabalho", "viagem", "janela", "dia", "cidade", "amor", "computador", "casa",
     "livro", "noite", "sol", "água", "gato", "cachorro", "amigo", "felicidade", "comida", "tempo",
     "carro", "música", "escola", "trabalho", "viagem", "janela", "dia", "cidade"};
-
-    HashMap* map = init_hashmap();
-
+    
     for(int i=0; i<100; i++){
       add(&map, (char*)palavras[i]);
     }
-
-    for(int i = 0; i < map->length; i++) {
-        HashmapEntry* entry = map->buckets[i];
-        while(entry != NULL) {
-            printf("%s - freq.: %d\n", entry->key, entry->count);
-            entry = entry->next;
-        }
-    }
   */
-
   FileBuffer buffer = read_file_to_buffer("files/cr7.txt");
 
   printf("%s\n", buffer.data);
-  printf("Buffer size: %ld", buffer.size);
+  printf("Tamanho do buffer: %ld\n", buffer.size);
+
+  HashMap* map = init_hashmap();
+  
+  count_words(buffer, map);
+
+  free_file_buffer(buffer);
+  
+  for(int i = 0; i < map->length; i++) {
+    HashmapEntry* entry = map->buckets[i];
+    while(entry != NULL) {
+      printf("%s - freq.: %d\n", entry->key, entry->count);
+      entry = entry->next;
+    }
+  }
 
   return 0;
 }
