@@ -39,9 +39,10 @@ int main() {
     }
   */
 
-  char* buffer = read_file_to_buffer("files/cr7.txt");
+  FileBuffer buffer = read_file_to_buffer("files/cr7.txt");
 
-  printf("%s", buffer);
+  printf("%s\n", buffer.data);
+  printf("Buffer size: %ld", buffer.size);
 
   return 0;
 }

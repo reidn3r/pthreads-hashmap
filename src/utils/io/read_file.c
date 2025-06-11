@@ -11,11 +11,13 @@ long get_file_size(FILE* file_stream) {
     return file_size;
 }
 
-char* read_file_to_buffer(const char* file_name) {
+FileBuffer read_file_to_buffer(const char* file_name) {
+    FileBuffer file_buffer = { NULL, 0 };
+
     FILE* file_stream = fopen(file_name, "r");
     if (file_stream == NULL) {
         perror("Erro ao abrir arquivo");
-        return NULL;
+        return file_buffer;
     }
 
     long file_size = get_file_size(file_stream);
@@ -24,7 +26,7 @@ char* read_file_to_buffer(const char* file_name) {
     if (buffer == NULL) {
         perror("Erro ao alocar memória");
         fclose(file_stream);
-        return NULL;
+        return file_buffer;
     }
 
     size_t read_bytes = fread(buffer, 1, file_size, file_stream);
@@ -32,5 +34,7 @@ char* read_file_to_buffer(const char* file_name) {
 
     fclose(file_stream);
 
-    return buffer;
+    file_buffer.data = buffer, file_buffer.size = read_bytes;
+
+    return file_buffer;
 }
