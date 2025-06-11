@@ -1,9 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "./utils/hashmap/hashmap.h"
-#include "./utils/hash/fnv_hash.h"
+#include "utils/hashmap/hashmap.h"
+#include "utils/hash/fnv_hash.h"
+#include "utils/io/read_file.h"
 
 int main() {
+  /*
   const char *palavras[] = {"amor", "computador", "casa", "água", "gato", "livro", "noite", "sol", "cachorro",
     "amigo", "felicidade", "carro", "comida", "tempo", "música", "escola", "trabalho", "viagem", "dia", "janela",
     "cidade", "amor", "sol", "cachorro", "livro", "noite", "computador", "água", "gato", "casa",
@@ -35,6 +37,11 @@ int main() {
             entry = entry->next;
         }
     }
+  */
+
+  char* buffer = read_file_to_buffer("files/cr7.txt");
+
+  printf("%s", buffer);
 
   return 0;
 }
