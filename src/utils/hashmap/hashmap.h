@@ -1,7 +1,8 @@
 #ifndef HASHMAP_H
 #define HASHMAP_H
 
-#define HASHMAP_BASE_SIZE 48
+// #define HASHMAP_BASE_SIZE 48
+#define HASHMAP_BASE_SIZE 8
 #define LOAD_FACTOR 0.75
 
 /* 
@@ -24,7 +25,8 @@ typedef struct HashMap {
 
 
 HashMap* init_hashmap();
-int add(HashMap* map, char* key);
+HashMap* resize(HashMap* map);
+int add(HashMap** map_ptr, char* key);
 HashmapEntry* get(HashMap* map, char* key);
 int contains(HashMap* map, char* key);
 int __get_bucket_index(char* key, int hashmap_size);

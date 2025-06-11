@@ -25,7 +25,7 @@ int main() {
     HashMap* map = init_hashmap();
 
     for(int i=0; i<100; i++){
-      add(map, (char*)palavras[i]);
+      add(&map, (char*)palavras[i]);
     }
 
     for(int i = 0; i < map->length; i++) {
