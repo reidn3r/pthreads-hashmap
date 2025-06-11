@@ -3,7 +3,9 @@
 
 #define MAX_WORD_LENGTH 256
 
-void count_words(FileBuffer buffer, HashMap* map) {
+HashMap* count_words(FileBuffer buffer) {
+    HashMap* map = init_hashmap();
+
     char current_word[MAX_WORD_LENGTH];
     int word_pos = 0;
 
@@ -25,4 +27,6 @@ void count_words(FileBuffer buffer, HashMap* map) {
         current_word[word_pos] = '\0';
         add(&map, current_word);
     }
+
+    return map;
 }

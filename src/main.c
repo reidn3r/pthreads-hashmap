@@ -34,19 +34,17 @@ int main() {
   printf("%s\n", buffer.data);
   printf("Tamanho do buffer: %ld\n", buffer.size);
 
-  HashMap* map = init_hashmap();
+  HashMap* map = count_words(buffer);
   
-  count_words(buffer, map);
-
-  free_file_buffer(buffer);
-  
-  for(int i = 0; i < map->length; i++) {
+  for (int i = 0; i < map->length; i++) {
     HashmapEntry* entry = map->buckets[i];
     while(entry != NULL) {
       printf("%s - freq.: %d\n", entry->key, entry->count);
       entry = entry->next;
     }
   }
+  
+  free_file_buffer(buffer);
 
   return 0;
 }
