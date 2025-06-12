@@ -20,16 +20,31 @@ struct tipoPack
 
 typedef struct tipoPack tipoPack;
 
+typedef struct {
+    char* key;
+    int count;
+} EntryPair;
+
+void print_hashmap(HashMap* map) {
+  for (int i = 0; i < map->length; i++) {
+    HashmapEntry* entry = map->buckets[i];
+    while (entry != NULL) {
+      printf("%s - freq.: %d\n", entry->key, entry->count);
+      entry = entry->next;
+    }
+  }
+}
 
 int main() {
   tipoPack pack[maxThreads];
   pthread_t thread[maxThreads];
   int iret[maxThreads];
   HashMap* map[maxThreads];
+  HashMap* finalMap = init_hashmap();
 
   int interval, nThreads, begin, end, remain;
 
-  FileBuffer buffer = read_file_to_buffer("files/alice.txt");
+  FileBuffer buffer = read_file_to_buffer("files/cr7.txt");
 
   printf("\nQual o numero de threads que deseja utilizar: ");
   scanf("%d", &nThreads);
@@ -71,15 +86,20 @@ int main() {
   for (int i = 0; i < nThreads; i++) {
     pthread_join(thread[i], NULL);
   }
-  
-  // for (int i = 0; i < map->length; i++) {
-  //   HashmapEntry* entry = map->buckets[i];
-  //   while(entry != NULL) {
-  //     printf("%s - freq.: %d\n", entry->key, entry->count);
-  //     entry = entry->next;
-  //   }
-  // }
-  // printf("%s\n", buffer.data);
+
+  for (int i = 0; i< nThreads; i++) {
+    HashMap* currentMap = map[i];
+    for (int j = 0; j < currentMap->length; j++) {
+      HashmapEntry* entry = currentMap->buckets[j];
+      while(entry != NULL) {
+        add_with_count(&finalMap, entry->key, entry->count);
+        entry = entry->next;
+      }
+    }
+  }
+
+  print_hashmap(finalMap);
+
   printf("Tamanho do buffer: %ld\n", buffer.size);
 
 

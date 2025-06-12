@@ -29,6 +29,7 @@ HashMap* resize(HashMap* map);
 int add(HashMap** map_ptr, char* key);
 HashmapEntry* get(HashMap* map, char* key);
 int contains(HashMap* map, char* key);
+int add_with_count(HashMap** map_ptr, char* key, int value);
 int __get_bucket_index(char* key, int hashmap_size);
 
 #endif

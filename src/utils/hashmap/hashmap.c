@@ -71,7 +71,6 @@ int contains(HashMap* map, char* key) {
 }
 
 HashMap* resize(HashMap* map) {
-  printf("RESIZED!!!\n");
   HashMap* new_map = (HashMap*) malloc(sizeof(HashMap));
   new_map->buckets = calloc(map->length * 2, sizeof(HashmapEntry*));
   new_map->length = map->length * 2;
@@ -101,3 +100,36 @@ int __get_bucket_index(char* key, int hashmap_size) {
   uint32_t hash_key = fnv1a_32(key);
   return hash_key % hashmap_size;
 }
+
+int add_with_count(HashMap** map_ptr, char* key, int value) {
+    HashMap* map = *map_ptr;
+
+    float load_ratio = (float)map->n_items / map->length;
+    if (load_ratio > LOAD_FACTOR) {
+        HashMap* new_map = resize(map);
+        *map_ptr = new_map;
+        map = new_map;
+    }
+
+    int idx = __get_bucket_index(key, map->length);
+    HashmapEntry* current = map->buckets[idx];
+
+    while (current != NULL) {
+        if (strcmp(current->key, key) == 0) {
+            current->count += value;
+            return 1;
+        }
+        current = current->next;
+    }
+
+    HashmapEntry* new_entry = (HashmapEntry*)malloc(sizeof(HashmapEntry));
+    new_entry->key = strdup(key);  // duplica a string para evitar problemas
+    new_entry->count = value;
+    new_entry->next = map->buckets[idx];
+
+    map->buckets[idx] = new_entry;
+    map->n_items++;
+
+    return 1;
+}
+
