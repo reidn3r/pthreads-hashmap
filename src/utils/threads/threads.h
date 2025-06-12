@@ -4,6 +4,6 @@
 #include "../hashmap/hashmap.h"
 #include "../io/read_file.h"
 
-HashMap* count_words(FileBuffer buffer);
+void* count_words(void *ptr);
 
 #endif
