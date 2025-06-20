@@ -12,7 +12,7 @@ fi
 echo "Compiling C code..."
 CFLAGS="-Wall -Wextra"
 if [[ $DEBUG -eq 1 ]]; then
-  CFLAGS="$CFLAGS -g -DDEBUG"
+  CFLAGS="$CFLAGS -fsanitize=address -g -DDEBUG"
 fi
 
 cc $CFLAGS -lpthread $(find src -name '*.c') -o a.out

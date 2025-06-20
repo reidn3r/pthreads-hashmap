@@ -1,109 +1,39 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
-#include <ctype.h>
-#include "utils/hashmap/hashmap.h"
+#include "definitions.h"
 #include "utils/hash/fnv_hash.h"
+#include "utils/hashmap/hashmap.h"
 #include "utils/io/read_file.h"
 #include "utils/threads/threads.h"
 
-#define maxThreads 8
-
-struct tipoPack
-{ 
-    int id;
-    int begin;
-    int end;
-    FileBuffer *buffer;
-    HashMap *map;
-};
-
-typedef struct tipoPack tipoPack;
-
-typedef struct {
-    char* key;
-    int count;
-} EntryPair;
-
-void print_hashmap(HashMap* map) {
-  for (int i = 0; i < map->length; i++) {
-    HashmapEntry* entry = map->buckets[i];
-    while (entry != NULL) {
-      printf("%s - freq.: %d\n", entry->key, entry->count);
-      entry = entry->next;
-    }
-  }
-}
-
 int main() {
-  tipoPack pack[maxThreads];
-  pthread_t thread[maxThreads];
-  int iret[maxThreads];
-  HashMap* map[maxThreads];
-  HashMap* finalMap = init_hashmap();
-
-  int interval, nThreads, begin, end, remain;
-
-  FileBuffer buffer = read_file_to_buffer("files/cr7.txt");
-
-  printf("\nQual o numero de threads que deseja utilizar: ");
-  scanf("%d", &nThreads);
-
-  interval = buffer.size / nThreads;
-  remain = buffer.size % nThreads;
-
-  begin = 0;
-  end = interval - 1;
-
-  if (remain>0) {
-    end++;
-    remain--;
-  }
-
-  for (int i = 0; i < nThreads; i++) {
-    map[i] = init_hashmap();
-    pack[i].id = i + 1;
-    pack[i].begin = begin;
-    pack[i].end = end;
-    pack[i].buffer = &buffer;
-    pack[i].map = map[i];
-
-    while (end < buffer.size && isalpha(buffer.data[end])) {
-      end++;
-    }
-
-    iret[i] = pthread_create(&thread[i], NULL, count_words, (void*) &pack[i]);
-
-    begin = end + 1;
-    end = begin + interval - 1;
-
-    if (remain>0) {
-      end++;
-      remain--;
-    }
-  }
-
-  for (int i = 0; i < nThreads; i++) {
-    pthread_join(thread[i], NULL);
-  }
-
-  for (int i = 0; i< nThreads; i++) {
-    HashMap* currentMap = map[i];
-    for (int j = 0; j < currentMap->length; j++) {
-      HashmapEntry* entry = currentMap->buckets[j];
-      while(entry != NULL) {
-        add_with_count(&finalMap, entry->key, entry->count);
-        entry = entry->next;
-      }
-    }
-  }
-
-  print_hashmap(finalMap);
+  buffer = read_file_to_buffer(FILE_PATH);
 
   printf("Tamanho do buffer: %ld\n", buffer.size);
 
+  pthread_t threads[TOTAL_THREADS];
+  ThreadArgs* thread_args = build_thread_args(buffer, TOTAL_THREADS);
+  HashMap* result_maps[TOTAL_THREADS];
+
+  for (int i = 0; i < TOTAL_THREADS; i++)
+    pthread_create(&threads[i], NULL, count_words_troutine, &thread_args[i]);
+  
+  for (int i = 0; i < TOTAL_THREADS; i++) 
+    pthread_join(threads[i], (void**)&result_maps[i]);
+
+  HashMap* final_map = init_hashmap();
+
+  for (int i = 0; i < TOTAL_THREADS; i++) {
+    merge_maps(&final_map, result_maps[i]);
+    free_hashmap(result_maps[i]);
+  }
+
+  print_hashmap(final_map);
 
   free_file_buffer(buffer);
+  free(thread_args);
+  free_hashmap(final_map);
 
   return 0;
 }

@@ -12,7 +12,6 @@ HashMap* init_hashmap() {
   return map;
 }
 
-
 int add(HashMap** map_ptr, char* key) {
   HashMap* map = *map_ptr;
   float load_ratio = (float)map->n_items / map->length;
@@ -133,3 +132,29 @@ int add_with_count(HashMap** map_ptr, char* key, int value) {
     return 1;
 }
 
+void print_hashmap(HashMap* map) {
+  for (int i = 0; i < map->length; i++) {
+    HashmapEntry* entry = map->buckets[i];
+    while(entry != NULL) {
+      printf("%s - freq.: %d\n", entry->key, entry->count);
+      entry = entry->next;
+    }
+  }
+}
+
+void free_hashmap(HashMap* map) {
+  if (!map) return;
+
+  for (int i = 0; i < map->length; i++) {
+      HashmapEntry* entry = map->buckets[i];
+      while (entry) {
+          HashmapEntry* next = entry->next;
+          free(entry->key);
+          free(entry);
+          entry = next;
+      }
+  }
+
+  free(map->buckets);
+  free(map);
+}
