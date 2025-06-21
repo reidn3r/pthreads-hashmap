@@ -44,6 +44,9 @@ int main(int argc, char *argv[]) {
 
     free_file_buffer(buffer);
     free(thread_args);
+
+    // print_hashmap(final_map);
+    
     free_hashmap(final_map);
     
     return 0;

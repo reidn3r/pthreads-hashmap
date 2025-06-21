@@ -1,29 +1,27 @@
-#!/usr/bin/bash
-set -e
+#!/bin/bash
 
-DEBUG=0
-DEFAULT_FILE="io/files/alice_10mb.txt"
+# Script para compilar e executar o programa
 
-if [[ "$1" == "--debug" ]]; then
-  DEBUG=1
-  echo "Debug mode enabled"
+# Compilar
+echo "Compilando..."
+gcc -o main src/main.c src/definitions.c src/utils/hash/fnv_hash.c \
+    src/utils/hashmap/hashmap.c src/utils/io/read_file.c \
+    src/utils/threads/threads.c -lpthread
+
+# Verificar se a compilação foi bem sucedida
+if [ $? -ne 0 ]; then
+    echo "Falha na compilação!"
+    exit 1
 fi
 
-echo "Compiling C code..."
-CFLAGS="-Wall -Wextra"
-if [[ $DEBUG -eq 1 ]]; then
-  CFLAGS="$CFLAGS -fsanitize=address -g -DDEBUG"
+echo "Compilação concluída com sucesso!"
+
+# Executar com o arquivo alice_1mb.txt
+echo "Executando com alice_1mb.txt..."
+./main ./io/files/alice_1mb.txt
+
+# Verificar se a execução foi bem sucedida
+if [ $? -ne 0 ]; then
+    echo "Falha na execução!"
+    exit 1
 fi
-
-cc $CFLAGS -lpthread $(find src -name '*.c') -o a.out
-
-echo "Executing C code..."
-if [[ $DEBUG -eq 1 ]]; then
-  gdb --args ./a.out "$DEFAULT_FILE"
-else
-  ./a.out "$DEFAULT_FILE"
-fi
-
-rm a.out
-
-echo -e "\nScript ran successfully."
