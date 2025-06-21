@@ -7,6 +7,10 @@
 
 extern const char FILE_PATH[];
 extern FileBuffer buffer;
-extern const int TOTAL_THREADS;
+
+// Remove a declaração de TOTAL_THREADS daqui
+#ifndef TOTAL_THREADS
+#define TOTAL_THREADS 4  // Valor padrão se não definido
+#endif
 
 #endif

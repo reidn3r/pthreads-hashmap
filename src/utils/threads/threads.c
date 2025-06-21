@@ -63,9 +63,6 @@ void* count_words_troutine(void* ptr) {
     HashMap* map = init_hashmap();
 
     ThreadArgs* args = (ThreadArgs*) ptr;
-
-    printf("Thread %d iniciada\n", args->id);
-
     char current_word[MAX_WORD_LENGTH];
     int word_pos = 0;
 
