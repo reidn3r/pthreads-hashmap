@@ -19,23 +19,34 @@ int main(int argc, char *argv[]) {
     buffer = read_file_to_buffer(argv[1]);
     printf("%ld,", buffer.size);  
 
-    pthread_t threads[TOTAL_THREADS];
-    ThreadArgs* thread_args = build_thread_args(buffer, TOTAL_THREADS);
-    HashMap* result_maps[TOTAL_THREADS];
-
     struct timespec start, end;
     clock_gettime(CLOCK_MONOTONIC, &start);
-    for (int i = 0; i < TOTAL_THREADS; i++)
-        pthread_create(&threads[i], NULL, count_words_troutine, &thread_args[i]);
     
-    for (int i = 0; i < TOTAL_THREADS; i++) 
-        pthread_join(threads[i], (void**)&result_maps[i]);
+    HashMap* final_map;
+    
+    if (TOTAL_THREADS == 0) {
+        final_map = count_words(buffer);
+    } 
+    else {
+        pthread_t threads[TOTAL_THREADS];
+        ThreadArgs* thread_args = build_thread_args(buffer, TOTAL_THREADS);
+        HashMap* result_maps[TOTAL_THREADS];
 
-    HashMap* final_map = init_hashmap();
-    for (int i = 0; i < TOTAL_THREADS; i++) {
-        merge_maps(&final_map, result_maps[i]);
-        free_hashmap(result_maps[i]);
+        for (int i = 0; i < TOTAL_THREADS; i++)
+            pthread_create(&threads[i], NULL, count_words_troutine, &thread_args[i]);
+        
+        for (int i = 0; i < TOTAL_THREADS; i++) 
+            pthread_join(threads[i], (void**)&result_maps[i]);
+
+        final_map = init_hashmap();
+        for (int i = 0; i < TOTAL_THREADS; i++) {
+            merge_maps(&final_map, result_maps[i]);
+            free_hashmap(result_maps[i]);
+        }
+        
+        free(thread_args);
     }
+    
     clock_gettime(CLOCK_MONOTONIC, &end);
 
     double elapsed_time = (end.tv_sec - start.tv_sec) + 
@@ -43,7 +54,6 @@ int main(int argc, char *argv[]) {
     printf("%.6f,%d\n", elapsed_time, TOTAL_THREADS);
 
     free_file_buffer(buffer);
-    free(thread_args);
 
     // print_hashmap(final_map);
     

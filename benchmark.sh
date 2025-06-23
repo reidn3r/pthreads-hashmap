@@ -10,7 +10,7 @@ TEST_FILES=(
     "io/files/alice_100mb.txt" 
     "io/files/alice_500mb.txt"
     )
-THREAD_COUNTS=(1 2 4 8 16 32)
+THREAD_COUNTS=(0 1 2 4 8 16 32)
 
 echo "tamanho_buffer,tempo_execucao,n_threads" > $OUTPUT_FILE
 
