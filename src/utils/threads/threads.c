@@ -31,17 +31,17 @@ HashMap* count_words(FileBuffer buffer) {
     return map;
 }
 
-ThreadArgs* build_thread_args(FileBuffer buffer, int total_threads) {
-    ThreadArgs* thread_args = malloc(sizeof(ThreadArgs) * total_threads);
+ProcessArgs* build_mpi_args(FileBuffer buffer, int total_process) {
+    ProcessArgs* process_args = malloc(sizeof(ProcessArgs) * total_process);
 
-    int interval_size = buffer.size / total_threads;
+    int interval_size = buffer.size / total_process;
     int current_start = 0;
     int current_end = interval_size;
 
-    for (int i = 0; i < total_threads; i++) {
-        thread_args[i].id = i + 1;
+    for (int i = 0; i < total_process; i++) {
+        process_args[i].id = i + 1;
 
-        thread_args[i].start = current_start;
+        process_args[i].start = current_start;
 
         while (current_end < (int) buffer.size &&
                isalpha(buffer.data[current_end]))
@@ -50,19 +50,19 @@ ThreadArgs* build_thread_args(FileBuffer buffer, int total_threads) {
         if (current_end > (int) buffer.size)
             current_end = buffer.size;
 
-        thread_args[i].end = current_end;
+        process_args[i].end = current_end;
 
-        current_start = thread_args[i].end;
+        current_start = process_args[i].end;
         current_end += interval_size;
     }
 
-    return thread_args;
+    return process_args;
 }
 
 void* count_words_troutine(void* ptr) {
     HashMap* map = init_hashmap();
 
-    ThreadArgs* args = (ThreadArgs*) ptr;
+    ProcessArgs* args = (ProcessArgs*) ptr;
     char current_word[MAX_WORD_LENGTH];
     int word_pos = 0;
 

@@ -8,11 +8,11 @@ typedef struct {
     int id;
     int start;
     int end;
-} ThreadArgs;
+} ProcessArgs;
 
 HashMap* count_words(FileBuffer buffer);
 
-ThreadArgs* build_thread_args(FileBuffer buffer, int total_threads);
+ProcessArgs* build_mpi_args(FileBuffer buffer, int total_threads);
 
 void* count_words_troutine(void* ptr);
 

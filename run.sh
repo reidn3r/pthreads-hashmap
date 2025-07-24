@@ -4,9 +4,9 @@
 
 # Compilar
 echo "Compilando..."
-gcc -o main src/main.c src/definitions.c src/utils/hash/fnv_hash.c \
+mpicc -o main src/main.c src/definitions.c src/utils/hash/fnv_hash.c \
     src/utils/hashmap/hashmap.c src/utils/io/read_file.c \
-    src/utils/threads/threads.c -lpthread
+    src/utils/threads/threads.c
 
 # Verificar se a compilação foi bem sucedida
 if [ $? -ne 0 ]; then
