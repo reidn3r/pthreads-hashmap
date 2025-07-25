@@ -1,29 +1,46 @@
-#!/usr/bin/bash
-set -e
+#!/bin/bash
 
-DEBUG=0
+DEBUG=false
 
-# Check for --debug flag
-if [[ "$1" == "--debug" ]]; then
-  DEBUG=1
-  echo "Debug mode enabled"
+# Checa argumentos
+if [ "$1" == "--debug" ] || [ "$1" == "-d" ]; then
+    DEBUG=true
+    shift
 fi
 
-echo "Compiling C code..."
-CFLAGS="-Wall -Wextra"
-if [[ $DEBUG -eq 1 ]]; then
-  CFLAGS="$CFLAGS -fsanitize=address -g -DDEBUG"
+if [ -z "$1" ] || [ -z "$2" ]; then
+    echo "Usage: $0 [--debug] [num_processes] [input_file]"
+    exit 1
 fi
 
-cc $CFLAGS -lpthread $(find src -name '*.c') -o a.out
+NUM_PROCS="$1"
+INPUT_FILE="$2"
 
-echo "Executing C code..."
-if [[ $DEBUG -eq 1 ]]; then
-  gdb ./a.out
+# Compilação
+echo "Compiling..."
+if $DEBUG; then
+    echo "[DEBUG] mpicc -g -Wall -fsanitize=address $(find src -name '*.c') -o a.out"
+    mpicc -g -Wall -fsanitize=address $(find src -name "*.c") -o a.out
 else
-  ./a.out
+    mpicc $(find src -name "*.c") -o a.out
 fi
 
-rm a.out
+if [ $? -ne 0 ]; then
+    echo "Compilation failed."
+    exit 2
+fi
 
-echo -e "\nScript ran successfully."
+# Execução
+echo "Running a.out with $NUM_PROCS processes on input: $INPUT_FILE..."
+if $DEBUG; then
+    echo "[DEBUG] mpirun --oversubscribe -np $NUM_PROCS ./a.out $INPUT_FILE"
+fi
+
+mpirun --oversubscribe -np "$NUM_PROCS" ./a.out "$INPUT_FILE"
+
+# Limpeza
+if ! $DEBUG; then
+    rm -f a.out
+else
+    echo "[DEBUG] Skipping a.out cleanup for inspection."
+fi

@@ -11,8 +11,10 @@
 #include "utils/threads/threads.h"
 #include <mpi.h>
 
-#define FLAG_ARGS 1
-#define FLAG_MAPS 2
+typedef enum {
+    ARGS = 0,
+    MAPS = 1,
+} Tags;
 
 int main(int argc, char *argv[]) {
     int id, numProcess = 0;
@@ -26,8 +28,8 @@ int main(int argc, char *argv[]) {
     MPI_Comm_size(MPI_COMM_WORLD,&numProcess);
     MPI_Status status;
     
-    HashMap* final_map, *partial_map;
     if (id == 0) {
+        HashMap* final_map;
         struct timespec start, end;
         clock_gettime(CLOCK_MONOTONIC, &start);
 
@@ -35,13 +37,15 @@ int main(int argc, char *argv[]) {
         printf("%ld,", buffer.size);
         ProcessArgs* args = build_mpi_args(buffer, numProcess);
     
-        for(int i=1; i<numProcess; i++){
-            MPI_Send(&args[i], 2, MPI_INT, i, FLAG_ARGS, MPI_COMM_WORLD);
+        for (int i=1; i<numProcess; i++) {
+            MPI_Send(&args[i], 2, MPI_INT, i, ARGS, MPI_COMM_WORLD);
         }
 
-        for(int i=1; i<=numProcess; i++){
-            MPI_Recv(partial_map, 3, MPI_INT, i, FLAG_MAPS, MPI_COMM_WORLD, &status);
+        for (int i=1; i<=numProcess; i++) {
+            HashMap* partial_map;
+            MPI_Recv(partial_map, 3, MPI_INT, i, MAPS, MPI_COMM_WORLD, &status);
             merge_maps(&final_map, partial_map);
+            free(partial_map);
         }
 
         free_file_buffer(buffer);
@@ -56,11 +60,11 @@ int main(int argc, char *argv[]) {
     } else {
         ProcessArgs args; 
 
-        MPI_Recv(&args, 2, MPI_INT, 0, FLAG_ARGS, MPI_COMM_WORLD, &status);
+        MPI_Recv(&args, 2, MPI_INT, 0, ARGS, MPI_COMM_WORLD, &status);
 
-        HashMap* partial_map = count_words_troutine((void *) args);
+        HashMap* partial_map = mpi_count_words(args);
 
-        MPI_Send(partial_map, 3, MPI_INT, 0, FLAG_MAPS, MPI_COMM_WORLD);
+        MPI_Send(partial_map, 3, MPI_INT, 0, MAPS, MPI_COMM_WORLD);
     }
     MPI_Finalize();
     return 0;

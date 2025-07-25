@@ -16,6 +16,8 @@ ProcessArgs* build_mpi_args(FileBuffer buffer, int total_threads);
 
 void* count_words_troutine(void* ptr);
 
+HashMap* mpi_count_words(ProcessArgs args);
+
 void merge_maps(HashMap** dest, HashMap* src);
 
 #endif
