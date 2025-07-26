@@ -3,7 +3,7 @@
 
 #include "utils/io/read_file.h"
 
-#define MAX_WORD_LENGTH 256
+#define MAX_WORD_LENGTH 64
 
 extern const char FILE_PATH[];
 

@@ -1,17 +1,20 @@
-#ifndef THREADS_H
-#define THREADS_H
+#ifndef COUNT_H
+#define COUNT_H
 
 #include "../hashmap/hashmap.h"
 #include "../io/read_file.h"
+#include "../../definitions.h"
 
 typedef struct {
-    int start;
-    int end;
-} ProcessArgs;
+    char key[MAX_WORD_LENGTH];
+    int count;
+} FlatEntry;
 
 HashMap* count_words(FileBuffer buffer);
 
 FileBuffer* partition_buffer(FileBuffer buffer, int total_processes);
+
+FlatEntry* serialize_map(HashMap* map);
 
 void merge_maps(HashMap** dest, HashMap* src);
 

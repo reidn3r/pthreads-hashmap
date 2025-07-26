@@ -1,7 +1,7 @@
-#include "threads.h"
+#include "count.h"
 #include <ctype.h>
 #include <stdio.h>
-#include "../../definitions.h"
+#include <string.h>
 
 HashMap* count_words(FileBuffer buffer) {
     HashMap* map = init_hashmap();
@@ -55,6 +55,27 @@ FileBuffer* partition_buffer(FileBuffer buffer, int total_processes) {
     }
 
     return buffer_partitions;
+}
+
+FlatEntry* serialize_map(HashMap* map) {
+    if (map == NULL) return NULL;
+
+    int total = map->n_items;
+    FlatEntry* flat = malloc(total * sizeof(FlatEntry));
+    
+    int idx = 0;
+    for (int i = 0; i < map->length; i++) {
+        HashmapEntry* entry = map->buckets[i];
+        while (entry) {
+            strncpy(flat[idx].key, entry->key, MAX_WORD_LENGTH);
+            flat[idx].key[MAX_WORD_LENGTH - 1] = '\0';
+            flat[idx].count = entry->count;
+            idx++;
+            entry = entry->next;
+        }
+    }
+
+    return flat;
 }
 
 void merge_maps(HashMap** dest, HashMap* src) {
