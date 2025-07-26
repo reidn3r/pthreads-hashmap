@@ -12,60 +12,89 @@
 #include <mpi.h>
 
 typedef enum {
-    ARGS = 0,
-    MAPS = 1,
+    PARTITION_SIZE = 1,
+    PARTITION_PTR = 2,
+    MAPS = 3,
 } Tags;
 
 int main(int argc, char *argv[]) {
     int id, numProcess = 0;
+    
     if (argc != 2) {
         printf("Uso: %s <arquivo_entrada>\n", argv[0]);
         return 1;
     }
 
+    MPI_Status status;
     MPI_Init(&argc,&argv);
     MPI_Comm_rank(MPI_COMM_WORLD,&id);
     MPI_Comm_size(MPI_COMM_WORLD,&numProcess);
-    MPI_Status status;
     
     if (id == 0) {
         HashMap* final_map;
         struct timespec start, end;
         clock_gettime(CLOCK_MONOTONIC, &start);
 
-        buffer = read_file_to_buffer("./io/files/alice_10mb.txt");
-        printf("%ld,", buffer.size);
-        ProcessArgs* args = build_mpi_args(buffer, numProcess);
+        FileBuffer buffer = read_file_to_buffer("files/cr7.txt");
+        FileBuffer* buffer_partitions = partition_buffer(buffer, numProcess);
+
+        // printf("---------Buffer particionado---------\n");
+        // for (int i = 0; i < numProcess; i++) {
+        //     printf("Partição %d: ", i);
+        //     for (int j = 0; j < buffer_partitions[i].size; j++) {
+        //         printf("%c", buffer_partitions[i].data[j]);
+        //     }
+        //     printf("\n");
+        // }
+        // printf("\n");
     
-        for (int i=1; i<numProcess; i++) {
-            MPI_Send(&args[i], 2, MPI_INT, i, ARGS, MPI_COMM_WORLD);
+        for (int i = 1; i < numProcess; i++) {
+            FileBuffer partition = buffer_partitions[i];
+            MPI_Send(&partition.size, 1, MPI_UNSIGNED_LONG, i, PARTITION_SIZE, MPI_COMM_WORLD);
+            MPI_Send(partition.data, partition.size, MPI_BYTE, i, PARTITION_PTR, MPI_COMM_WORLD);
         }
 
-        for (int i=1; i<=numProcess; i++) {
-            HashMap* partial_map;
-            MPI_Recv(partial_map, 3, MPI_INT, i, MAPS, MPI_COMM_WORLD, &status);
-            merge_maps(&final_map, partial_map);
-            free(partial_map);
-        }
+        FileBuffer master_partition = buffer_partitions[0];
+        HashMap* partial_map = count_words(master_partition);
+        print_hashmap(partial_map);
 
-        free_file_buffer(buffer);
-        print_hashmap(final_map);
-        free_hashmap(final_map);
+        // for (int i=1; i<=numProcess; i++) {
+        //     HashMap* partial_map;
+        //     MPI_Recv(partial_map, 3, MPI_INT, i, MAPS, MPI_COMM_WORLD, &status);
+        //     merge_maps(&final_map, partial_map);
+        //     free(partial_map);
+        // }
+
+        // free_file_buffer(buffer);
+        // print_hashmap(final_map);
+        // free_hashmap(final_map);
         
         clock_gettime(CLOCK_MONOTONIC, &end);
     
         double elapsed_time = (end.tv_sec - start.tv_sec) + 
             (end.tv_nsec - start.tv_nsec) / 1e9;
-        printf("%.6f,%d\n", elapsed_time, TOTAL_THREADS);
+        //printf("%.6f,%d\n", elapsed_time, TOTAL_THREADS);
+        
     } else {
+        FileBuffer buffer;
         ProcessArgs args; 
+        
+        MPI_Recv(&buffer.size, 1, MPI_UNSIGNED_LONG, 0, PARTITION_SIZE, MPI_COMM_WORLD, &status);
 
-        MPI_Recv(&args, 2, MPI_INT, 0, ARGS, MPI_COMM_WORLD, &status);
+        char* data = malloc(buffer.size);
+        MPI_Recv(data, buffer.size, MPI_BYTE, 0, PARTITION_PTR, MPI_COMM_WORLD, &status);
+        buffer.data = data;
 
-        HashMap* partial_map = mpi_count_words(args);
+        // printf("Process %d: recieved buffer size: %ld\n", id, buffer.size);
+        // printf("Process %d: recieved buffer data: %s\n", id, buffer.data);
 
-        MPI_Send(partial_map, 3, MPI_INT, 0, MAPS, MPI_COMM_WORLD);
+        HashMap* partial_map = count_words(buffer);
+        print_hashmap(partial_map);
+
+        // MPI_Send(partial_map, 3, MPI_INT, 0, MAPS, MPI_COMM_WORLD);
     }
+
     MPI_Finalize();
+    
     return 0;
 }

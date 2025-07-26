@@ -2,7 +2,6 @@
 
 DEBUG=false
 
-# Checa argumentos
 if [ "$1" == "--debug" ] || [ "$1" == "-d" ]; then
     DEBUG=true
     shift
@@ -16,7 +15,6 @@ fi
 NUM_PROCS="$1"
 INPUT_FILE="$2"
 
-# Compilação
 echo "Compiling..."
 if $DEBUG; then
     echo "[DEBUG] mpicc -g -Wall -fsanitize=address $(find src -name '*.c') -o a.out"
@@ -30,7 +28,6 @@ if [ $? -ne 0 ]; then
     exit 2
 fi
 
-# Execução
 echo "Running a.out with $NUM_PROCS processes on input: $INPUT_FILE..."
 if $DEBUG; then
     echo "[DEBUG] mpirun --oversubscribe -np $NUM_PROCS ./a.out $INPUT_FILE"
@@ -38,7 +35,6 @@ fi
 
 mpirun --oversubscribe -np "$NUM_PROCS" ./a.out "$INPUT_FILE"
 
-# Limpeza
 if ! $DEBUG; then
     rm -f a.out
 else
