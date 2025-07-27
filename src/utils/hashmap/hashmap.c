@@ -122,7 +122,7 @@ int add_with_count(HashMap** map_ptr, char* key, int value) {
     }
 
     HashmapEntry* new_entry = (HashmapEntry*)malloc(sizeof(HashmapEntry));
-    new_entry->key = strdup(key);  // duplica a string para evitar problemas
+    new_entry->key = strdup(key); 
     new_entry->count = value;
     new_entry->next = map->buckets[idx];
 
@@ -136,7 +136,6 @@ void print_hashmap(HashMap* map) {
   for (int i = 0; i < map->length; i++) {
     HashmapEntry* entry = map->buckets[i];
     while(entry != NULL) {
-      printf("%s - freq.: %d\n", entry->key, entry->count);
       entry = entry->next;
     }
   }

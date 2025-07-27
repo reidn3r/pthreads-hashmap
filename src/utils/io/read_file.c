@@ -33,7 +33,6 @@ FileBuffer read_file_to_buffer(const char* file_name) {
     buffer[read_bytes] = '\0';
 
     fclose(file_stream);
-
     file_buffer.data = buffer, file_buffer.size = read_bytes;
 
     return file_buffer;

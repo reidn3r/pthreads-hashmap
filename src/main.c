@@ -35,19 +35,9 @@ int main(int argc, char *argv[]) {
         struct timespec start, end;
         clock_gettime(CLOCK_MONOTONIC, &start);
 
-        FileBuffer buffer = read_file_to_buffer(FILE_PATH);
+        FileBuffer buffer = read_file_to_buffer(argv[1]);
         FileBuffer* buffer_partitions = partition_buffer(buffer, numProcess);
 
-        // printf("---------Buffer particionado---------\n");
-        // for (int i = 0; i < numProcess; i++) {
-        //     printf("Partição %d: ", i);
-        //     for (int j = 0; j < buffer_partitions[i].size; j++) {
-        //         printf("%c", buffer_partitions[i].data[j]);
-        //     }
-        //     printf("\n");
-        // }
-        // printf("\n");
-    
         for (int i = 1; i < numProcess; i++) {
             FileBuffer partition = buffer_partitions[i];
             MPI_Send(&partition.size, 1, MPI_UNSIGNED_LONG, i, PARTITION_SIZE, MPI_COMM_WORLD);
@@ -80,8 +70,7 @@ int main(int argc, char *argv[]) {
     
         double elapsed_time = (end.tv_sec - start.tv_sec) + 
             (end.tv_nsec - start.tv_nsec) / 1e9;
-        printf("%.6f,%d\n", elapsed_time, TOTAL_THREADS);
-        
+        printf("%zu, %.6f,%d\n", buffer.size, elapsed_time, numProcess);
     } else {
         FileBuffer buffer;
         
@@ -89,9 +78,6 @@ int main(int argc, char *argv[]) {
 
         buffer.data = malloc(buffer.size);
         MPI_Recv(buffer.data, buffer.size, MPI_BYTE, 0, PARTITION_PTR, MPI_COMM_WORLD, &status);
-
-        // printf("Process %d: recieved buffer size: %ld\n", id, buffer.size);
-        // printf("Process %d: recieved buffer data: %s\n", id, buffer.data);
 
         HashMap* partial_map = count_words(buffer);
         
